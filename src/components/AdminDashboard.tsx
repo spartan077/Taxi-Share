@@ -409,41 +409,50 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
-      
-      <div className="mb-4">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('rides')}
-              className={`${
-                activeTab === 'rides'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } w-1/4 py-4 px-1 text-center border-b-2 font-medium`}
-            >
-              Manage Rides
-            </button>
-            <button
-              onClick={() => setActiveTab('pricing')}
-              className={`${
-                activeTab === 'pricing'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } w-1/4 py-4 px-1 text-center border-b-2 font-medium`}
-            >
-              Manage Pricing
-            </button>
-          </nav>
-        </div>
+    <div className="max-w-7xl mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+        <p className="text-gray-600">Manage rides and monitor system activity</p>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="flex space-x-8">
+          <button
+            onClick={() => setActiveTab('rides')}
+            className={`pb-4 px-1 relative ${
+              activeTab === 'rides'
+                ? 'text-yellow-600 font-medium'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Rides
+            {activeTab === 'rides' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500"></span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`pb-4 px-1 relative ${
+              activeTab === 'users'
+                ? 'text-yellow-600 font-medium'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Users
+            {activeTab === 'users' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500"></span>
+            )}
+          </button>
+        </nav>
+      </div>
+
+      {/* Content Area */}
       {activeTab === 'rides' ? (
-        <div className="space-y-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-              <thead className="bg-gray-100">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Route & Details
@@ -461,9 +470,6 @@ export default function AdminDashboard() {
                     Members
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Capacity
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -471,57 +477,59 @@ export default function AdminDashboard() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {groups.map((group) => (
-                  <tr key={group.id}>
+                  <tr key={group.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm text-gray-900 font-medium">
                         {group.ride_request.source} → {group.ride_request.destination}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-sm text-gray-500">
                         Gender: {group.ride_request.gender_preference || 'Any'}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-sm text-gray-500">
                         Status: {group.ride_request.status}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">
-                        {new Date(group.ride_request.time_slot).toLocaleString()}
-                      </div>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {new Date(group.ride_request.time_slot).toLocaleString()}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
-                        {group.ride_request.car_details?.car || 'Not selected'}
-                      </div>
+                      <div className="text-sm text-gray-900">{group.ride_request.car_details?.car || 'Not selected'}</div>
                       {group.ride_request.car_details && (
-                        <div className="text-xs text-gray-500">
-                          Price: ₹{group.ride_request.car_details.final_price}
-                        </div>
+                        <div className="text-sm text-gray-500">₹{group.ride_request.car_details.final_price}</div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
-                        {group.creator_details.full_name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {group.creator_details.phone_number}
-                      </div>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {group.creator_details.full_name}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-sm text-gray-500">
                       <div className="space-y-2">
-                        {group.member_details.map((member) => (
-                          <div key={member.id} className="flex items-center justify-between text-sm">
-                            <span>{member.full_name}</span>
-                            {member.id !== group.ride_request.user_id && (
+                        {/* Show creator details first */}
+                        <div className="flex items-center justify-between text-sm border-b pb-2">
+                          <div>
+                            <div className="font-semibold">{group.creator_details.full_name}</div>
+                            <div className="text-xs text-gray-500">
+                              {group.creator_details.phone_number} (Creator)
+                            </div>
+                          </div>
+                        </div>
+                        {/* Show other members */}
+                        {group.member_details
+                          .filter(member => member.id !== group.ride_request.user_id) // Exclude creator
+                          .map((member) => (
+                            <div key={member.id} className="flex items-center justify-between text-sm">
+                              <div>
+                                <div>{member.full_name}</div>
+                                <div className="text-xs text-gray-500">{member.phone_number}</div>
+                              </div>
                               <button
                                 onClick={() => handleRemoveMember(group.id, member.id)}
                                 className="text-red-600 hover:text-red-800 ml-2"
                               >
                                 <UserX className="h-4 w-4" />
                               </button>
-                            )}
-                          </div>
+                            </div>
                         ))}
                       </div>
                     </td>

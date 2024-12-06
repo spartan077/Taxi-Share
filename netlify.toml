@@ -1,0 +1,6 @@
+[build]
+  command = "pnpm run dev"
+  publish = "dist" # Adjust this to your output directory
+
+[build.environment]
+  NPM_FLAGS = "--global pnpm"

@@ -11,6 +11,8 @@ import { supabase } from './lib/supabase';
 import AdminDashboard from './components/AdminDashboard';
 import CarSelection from './components/CarSelection';
 import { Session } from '@supabase/supabase-js';
+import Footer from './components/Footer';
+import HelpCenter from './pages/HelpCenter';
 
 // Wrapper component to handle location state
 function CarSelectionWrapper() {
@@ -63,9 +65,9 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
-        {session && <Navbar />}
-        <main className="container mx-auto px-4 py-8">
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1">
           <Routes>
             {!session ? (
               <>
@@ -78,12 +80,14 @@ function App() {
                 <Route path="/matches" element={<Matches />} />
                 <Route path="/confirmation" element={<Confirmation />} />
                 <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/select-car" element={<CarSelectionWrapper />} />
+                <Route path="/car-selection" element={<CarSelectionWrapper />} />
+                <Route path="/help" element={<HelpCenter />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </>
             )}
           </Routes>
         </main>
+        <Footer />
         <Toaster 
           position="bottom-right"
           toastOptions={{

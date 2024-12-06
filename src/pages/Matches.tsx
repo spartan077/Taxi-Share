@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Calendar, MapPin, Filter } from 'lucide-react';
+import { Users, Calendar, MapPin, Filter, Car, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { LOCATIONS } from '../lib/constants';
 import toast from 'react-hot-toast';
@@ -265,12 +265,15 @@ export default function Matches() {
     
     if (!pricing) return null;
 
+    const maxPassengers = pricing.car_name.toLowerCase().includes('innova') || 
+                         pricing.car_name.toLowerCase().includes('ertiga') ? 6 : 4;
+
     return {
       car: pricing.car_name,
-      base_price: pricing.base_price,
-      discount: pricing.discount,
-      final_price: pricing.final_price,
-      max_passengers: pricing.max_passengers
+      base_price: Math.round(pricing.base_price / maxPassengers),
+      discount: Math.round(pricing.discount / maxPassengers),
+      final_price: Math.round(pricing.final_price / maxPassengers),
+      max_passengers: maxPassengers
     };
   };
 
@@ -288,140 +291,167 @@ export default function Matches() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div className="px-4 py-6 sm:px-0">
-        <Announcement />
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-center mb-8">Available Rides</h1>
-        </div>
-        
-        {/* Filters Section */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <h3 className="text-lg font-semibold text-yellow-800 mb-2">Payment Information</h3>
+        <p className="text-yellow-700">
+          Please note: We require an advance payment of ₹250 per person. Once your ride group is full, 
+          our team will contact you to coordinate the payment and travel arrangements.
+        </p>
+      </div>
+
+      <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <h2 className="text-lg font-semibold mb-4">Filters</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <select
+            value={selectedSource}
+            onChange={(e) => setSelectedSource(e.target.value)}
+            className="rounded-lg border-gray-200 focus:border-yellow-500 focus:ring focus:ring-yellow-200"
+          >
+            <option value="">Any Source</option>
+            {LOCATIONS.map(location => (
+              <option key={location} value={location}>{location}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedDestination}
+            onChange={(e) => setSelectedDestination(e.target.value)}
+            className="rounded-lg border-gray-200 focus:border-yellow-500 focus:ring focus:ring-yellow-200"
+          >
+            <option value="">Any Destination</option>
+            {LOCATIONS.map(location => (
+              <option key={location} value={location}>{location}</option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="rounded-lg border-gray-200 focus:border-yellow-500 focus:ring focus:ring-yellow-200"
+          />
+
+          {user?.user_metadata?.gender === 'female' && (
+            <label className="flex items-center space-x-2">
               <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                type="checkbox"
+                checked={showFemaleOnly}
+                onChange={(e) => setShowFemaleOnly(e.target.checked)}
+                className="rounded text-yellow-500 focus:ring-yellow-500"
               />
-            </div>
-            
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
-              <select
-                value={selectedSource}
-                onChange={(e) => setSelectedSource(e.target.value)}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              >
-                <option value="">All Sources</option>
-                {LOCATIONS.map((location) => (
-                  <option key={location} value={location}>{location}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
-              <select
-                value={selectedDestination}
-                onChange={(e) => setSelectedDestination(e.target.value)}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              >
-                <option value="">All Destinations</option>
-                {LOCATIONS.map((location) => (
-                  <option key={location} value={location}>{location}</option>
-                ))}
-              </select>
-            </div>
-
-            {user?.user_metadata.gender === 'female' && (
-              <div className="flex items-end">
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={showFemaleOnly}
-                    onChange={(e) => setShowFemaleOnly(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Female only rides</span>
-                </label>
-              </div>
-            )}
-          </div>
+              <span className="text-gray-700">Female only rides</span>
+            </label>
+          )}
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          {requests.map((request) => {
+      <div className="space-y-6">
+        {loading ? (
+          <div className="text-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-yellow-500 mb-4" />
+            <p className="text-gray-600">Loading available rides...</p>
+          </div>
+        ) : requests.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
+            <Car className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No rides available</h3>
+            <p className="text-gray-600">Create a new ride request to start sharing!</p>
+          </div>
+        ) : (
+          requests.map((request) => {
             const group = groups[request.id];
-            const remainingSeats = group ? group.remaining_capacity : request.seats_required;
+            const totalSeats = request.selected_car.toLowerCase().includes('innova') || 
+                              request.selected_car.toLowerCase().includes('ertiga') ? 6 : 4;
+            const remainingSeats = group ? 
+              group.remaining_capacity : 
+              (totalSeats - request.seats_required);
+            
             const isCreator = request.user_id === user?.id;
             const isMember = group?.members?.includes(user?.id);
             const isFull = remainingSeats <= 0;
-
             const carDetails = getCarDetails(request.source, request.destination, request.selected_car);
 
             return (
               <div
                 key={request.id}
-                className="bg-white rounded-lg shadow-md p-4 border border-gray-200 relative"
+                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative hover:shadow-md transition-shadow"
               >
-                {/* Add a "FULL" badge if the ride is full */}
                 {isFull && (
-                  <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-semibold">
+                  <div className="absolute top-4 right-4 bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
                     FULL
                   </div>
                 )}
-                <div className="flex items-center mb-2">
-                  <Calendar className="w-5 h-5 mr-2 text-gray-500" />
-                  <span className="text-gray-700">
-                    {new Date(request.time_slot).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex items-center mb-2">
-                  <MapPin className="w-5 h-5 mr-2 text-gray-500" />
-                  <span className="text-gray-700">
-                    {request.source} → {request.destination}
-                  </span>
-                </div>
-                <div className="flex items-center mb-2">
-                  <Users className="w-5 h-5 mr-2 text-gray-500" />
-                  <span className="text-gray-700">
-                    {remainingSeats} seat{remainingSeats !== 1 ? 's' : ''} available
-                  </span>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <div className="text-gray-600">
-                    {request.selected_car || 'Car not specified'}
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="h-5 w-5 text-yellow-500" />
+                      <span className="text-gray-700">
+                        {new Date(request.time_slot).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="h-5 w-5 text-yellow-500" />
+                      <span className="text-gray-700">
+                        {request.source} → {request.destination}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Users className="h-5 w-5 text-yellow-500" />
+                      <span className="text-gray-700">
+                        {remainingSeats} seats available 
+                        <span className="text-sm text-gray-500">
+                          (Creator requested {request.seats_required} seats)
+                        </span>
+                      </span>
+                    </div>
                   </div>
-                  <div className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
-                    ₹{getPricePerPerson(request)}/person
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium text-gray-900">
+                          {carDetails?.car || 'Car not selected'}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          {carDetails ? (
+                            <>
+                              ₹{carDetails.final_price} per person
+                              <span className="text-xs text-gray-500 block">
+                                ({carDetails.max_passengers} seater)
+                              </span>
+                            </>
+                          ) : 'Price not available'}
+                        </p>
+                      </div>
+                      {!isCreator && !isMember && !isFull && (
+                        <button
+                          onClick={() => handleJoinRide(request)}
+                          disabled={loading}
+                          className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+                        >
+                          Join Ride
+                        </button>
+                      )}
+                    </div>
+                    
+                    {(isCreator || isMember) && (
+                      <div className="bg-yellow-50 rounded-lg p-4">
+                        <h4 className="font-medium text-yellow-800 mb-2">
+                          {isCreator ? 'You created this ride' : 'You joined this ride'}
+                        </h4>
+                        <p className="text-yellow-700 text-sm">
+                          Contact details will be shared once the group is full
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <RideMembers request={request} group={group} />
-                {!isCreator && !isMember && (
-                  <button
-                    onClick={() => handleJoinRide(request)}
-                    className={`w-full mt-4 py-2 px-4 rounded-md ${
-                      isFull
-                        ? 'bg-gray-300 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                    }`}
-                    disabled={isFull}
-                  >
-                    {isFull ? 'Ride Full' : 'Join Ride'}
-                  </button>
-                )}
-                {(isCreator || isMember) && (
-                  <div className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm mt-4 text-center">
-                    {isCreator ? 'Your Ride' : 'Already Joined'}
-                  </div>
-                )}
               </div>
             );
-          })}
-        </div>
+          })
+        )}
       </div>
     </div>
   );
