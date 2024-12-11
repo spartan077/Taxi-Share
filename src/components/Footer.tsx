@@ -64,6 +64,18 @@ export default function Footer() {
                   <a href="/help" className="text-gray-600 hover:text-yellow-600">Help Center</a>
                 </li>
                 <li>
+                  <a href="/privacy-policy" className="text-gray-600 hover:text-yellow-600">Privacy Policy</a>
+                </li>
+                <li>
+                  <a href="/cancellation-policy" className="text-gray-600 hover:text-yellow-600">Cancellation Policy</a>
+                </li>
+                <li>
+                  <a href="/shipping-policy" className="text-gray-600 hover:text-yellow-600">Shipping Policy</a>
+                </li>
+                <li>
+                  <a href="/terms" className="text-gray-600 hover:text-yellow-600">Terms & Conditions</a>
+                </li>
+                <li>
                   <p className="text-sm text-gray-500">
                     For urgent queries (WhatsApp only):{' '}
                     <a href="https://wa.me/918189864117" className="text-yellow-600 hover:text-yellow-700">
@@ -78,4 +90,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-} 
+}

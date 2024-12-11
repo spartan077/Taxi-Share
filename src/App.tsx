@@ -13,6 +13,10 @@ import CarSelection from './components/CarSelection';
 import { Session } from '@supabase/supabase-js';
 import Footer from './components/Footer';
 import HelpCenter from './pages/HelpCenter';
+import PrivacyPolicy from './pages/app_(policies)_privacy-policy_page';
+import CancellationPolicy from './pages/app_(policies)_cancellation-policy_page';
+import ShippingPolicy from './pages/app_(policies)_shipping-policy_page';
+import Terms from './pages/app_(policies)_terms_page';
 
 // Wrapper component to handle location state
 function CarSelectionWrapper() {
@@ -82,6 +86,10 @@ function App() {
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/car-selection" element={<CarSelectionWrapper />} />
                 <Route path="/help" element={<HelpCenter />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+                <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                <Route path="/terms" element={<Terms />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </>
             )}
